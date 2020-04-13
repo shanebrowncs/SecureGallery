@@ -4,6 +4,7 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.text.Layout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,8 +18,16 @@ import java.util.ArrayList;
 public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecyclerAdapter.ImageGridRecyclerViewHolder> {
     String[] images;
 
-    public ImageGridRecyclerAdapter(String[] images) {
+    private OnImageClickListener listener;
+
+    public ImageGridRecyclerAdapter(String[] images, OnImageClickListener listener) {
         this.images = images;
+        this.listener = listener;
+    }
+
+    public void refreshImages(String[] images){
+        this.images = images;
+        this.notifyDataSetChanged();
     }
 
     @NonNull
@@ -29,7 +38,7 @@ public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecy
 
         View customView = inflater.inflate(R.layout.grid_recycler_item, parent, false);
 
-        ImageGridRecyclerViewHolder vh = new ImageGridRecyclerViewHolder(customView);
+        ImageGridRecyclerViewHolder vh = new ImageGridRecyclerViewHolder(customView, listener);
         return vh;
     }
 
@@ -45,11 +54,25 @@ public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecy
         return images.length;
     }
 
-    public static class ImageGridRecyclerViewHolder extends RecyclerView.ViewHolder{
+    public static class ImageGridRecyclerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         public ImageView imageView;
-        public ImageGridRecyclerViewHolder(View v) {
+        OnImageClickListener listener;
+        public ImageGridRecyclerViewHolder(View v, OnImageClickListener listener) {
             super(v);
             imageView = v.findViewById(R.id.grid_image_view);
+
+            this.listener = listener;
+            v.setOnClickListener(this);
         }
+
+        @Override
+        public void onClick(View v) {
+            Log.e("SecureGallery", "pos: " + getAdapterPosition());
+            listener.onImageClick(getAdapterPosition());
+        }
+    }
+
+    public interface OnImageClickListener{
+        void onImageClick(int position);
     }
 }

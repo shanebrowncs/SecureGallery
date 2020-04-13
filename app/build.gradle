@@ -36,4 +36,7 @@ dependencies {
     // Pattern lock
     implementation 'com.andrognito.patternlockview:patternlockview:1.0.0'
     implementation 'androidx.recyclerview:recyclerview:1.1.0'
+
+    // Zoomable image view
+    implementation 'com.github.chrisbanes:PhotoView:2.0.0'
 }

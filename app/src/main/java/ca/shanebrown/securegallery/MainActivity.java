@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
@@ -26,12 +27,15 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
 public class MainActivity extends AppCompatActivity {
+
+    private ArrayList<Uri> sent_uris = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -52,6 +56,28 @@ public class MainActivity extends AppCompatActivity {
             mPatternLockView.setVisibility(View.VISIBLE);
         }
 
+        // Handle accepting of images
+        Intent thisIntent = getIntent();
+        String action = thisIntent.getAction();
+        String type = thisIntent.getType();
+
+        if(Intent.ACTION_SEND.equals(action) && type != null){
+            if(type.startsWith("image/")){ // Handle single image
+                Log.e("SecureGallery", "Recieved Single Image");
+                Uri single_uri = thisIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+
+                if(single_uri != null) {
+                    sent_uris = new ArrayList<>();
+                    sent_uris.add(single_uri);
+                }
+            }
+        }else if(Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null){
+            if(type.startsWith("image/")){ // Handle multiple images
+                Log.e("SecureGallery", "Recieved Mutliple Images");
+                ArrayList<Uri> URIs = thisIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+                sent_uris = URIs;
+            }
+        }
 
         mPatternLockView.setDotCount(6);
         mPatternLockView.setDotNormalSize((int) ResourceUtils.getDimensionInPx(this, R.dimen.pattern_lock_dot_size));
@@ -106,6 +132,8 @@ public class MainActivity extends AppCompatActivity {
 
     public void startAppMainPage(){
         Intent intent = new Intent(MainActivity.this, ImageGridActivity.class);
+        intent.putParcelableArrayListExtra("sent_uris", sent_uris);
+
         startActivity(intent);
         finish();
     }
