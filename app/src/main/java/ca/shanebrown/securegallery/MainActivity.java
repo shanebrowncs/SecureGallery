@@ -1,11 +1,16 @@
 package ca.shanebrown.securegallery;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 
+import android.Manifest;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.os.Bundle;
 import android.util.Base64;
 import android.util.Log;
@@ -75,8 +80,19 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(List<PatternLockView.Dot> pattern) {
                 String entered_pw = PatternLockUtils.patternToString(mPatternLockView, pattern);
-                verifyPassword(entered_pw);
                 mPatternLockView.clearPattern();
+
+                if(verifyPassword(entered_pw)){
+                    if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
+                        if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                            ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+                            return;
+                        }
+                    }
+
+                    // We have permission or build is < M
+                    startAppMainPage();
+                }
             }
 
             @Override
@@ -86,6 +102,24 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+    }
+
+    public void startAppMainPage(){
+        Intent intent = new Intent(MainActivity.this, ImageGridActivity.class);
+        startActivity(intent);
+        finish();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+
+        if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
+            Log.e("SecureGallery", "Permission gained, can now let through");
+            startAppMainPage();
+        }else{
+            Toast.makeText(this, "You must allow external storage permissions to continue.", Toast.LENGTH_LONG).show();
+        }
     }
 
     public boolean verifyPassword(String entered_pw){
@@ -123,12 +157,9 @@ public class MainActivity extends AppCompatActivity {
         }
 
         // FINAL PASSWORD CHECK
-        if(hash64.equals(storedHash64)){
-            Toast.makeText(this, "Good password", Toast.LENGTH_LONG).show();
-        }else{
-            Toast.makeText(this, "Bad password", Toast.LENGTH_LONG).show();
+        if(hash64.equals(storedHash64)) {
+            return true;
         }
-
         return false;
     }
 }
