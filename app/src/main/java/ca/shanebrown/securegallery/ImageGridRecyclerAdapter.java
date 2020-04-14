@@ -2,8 +2,6 @@ package ca.shanebrown.securegallery;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.text.Layout;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,19 +11,17 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-
 public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecyclerAdapter.ImageGridRecyclerViewHolder> {
-    String[] images;
+    Bitmap[] images;
 
     private OnImageClickListener listener;
 
-    public ImageGridRecyclerAdapter(String[] images, OnImageClickListener listener) {
+    public ImageGridRecyclerAdapter(Bitmap[] images, OnImageClickListener listener) {
         this.images = images;
         this.listener = listener;
     }
 
-    public void refreshImages(String[] images){
+    public void refreshImages(Bitmap[] images){
         this.images = images;
         this.notifyDataSetChanged();
     }
@@ -44,8 +40,7 @@ public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecy
 
     @Override
     public void onBindViewHolder(@NonNull ImageGridRecyclerViewHolder holder, int position) {
-        Bitmap bmap = BitmapFactory.decodeFile(this.images[position]);
-        holder.imageView.setImageBitmap(bmap);
+        holder.imageView.setImageBitmap(this.images[position]);
         holder.imageView.invalidate();
     }
 

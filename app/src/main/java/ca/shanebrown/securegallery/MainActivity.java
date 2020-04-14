@@ -36,6 +36,7 @@ import javax.crypto.spec.PBEKeySpec;
 public class MainActivity extends AppCompatActivity {
 
     private ArrayList<Uri> sent_uris = null;
+    private String key = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -109,6 +110,8 @@ public class MainActivity extends AppCompatActivity {
                 mPatternLockView.clearPattern();
 
                 if(verifyPassword(entered_pw)){
+                    key = entered_pw;
+
                     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                         if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
                             ActivityCompat.requestPermissions(MainActivity.this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
@@ -117,7 +120,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     // We have permission or build is < M
-                    startAppMainPage();
+                    startAppMainPage(entered_pw);
                 }
             }
 
@@ -130,9 +133,10 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
-    public void startAppMainPage(){
+    public void startAppMainPage(@NonNull String key){
         Intent intent = new Intent(MainActivity.this, ImageGridActivity.class);
         intent.putParcelableArrayListExtra("sent_uris", sent_uris);
+        intent.putExtra("key", key);
 
         startActivity(intent);
         finish();
@@ -144,7 +148,7 @@ public class MainActivity extends AppCompatActivity {
 
         if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
             Log.e("SecureGallery", "Permission gained, can now let through");
-            startAppMainPage();
+            startAppMainPage(key);
         }else{
             Toast.makeText(this, "You must allow external storage permissions to continue.", Toast.LENGTH_LONG).show();
         }

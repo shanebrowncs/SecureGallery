@@ -3,6 +3,7 @@ package ca.shanebrown.securegallery;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 
@@ -18,12 +19,12 @@ public class ImageViewActivity extends AppCompatActivity {
         setContentView(R.layout.activity_image_view);
 
         Intent thisIntent = getIntent();
-        String imagePath = thisIntent.getStringExtra("image");
+        Bitmap image = thisIntent.getParcelableExtra("image");
 
         PhotoView photoView = findViewById(R.id.photo_view);
 
-        if(imagePath != null && !imagePath.isEmpty()){
-            photoView.setImageURI(Uri.fromFile(new File(imagePath)));
+        if(image != null){
+            photoView.setImageBitmap(image);
         }
     }
 }

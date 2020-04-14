@@ -9,7 +9,7 @@
     tools:context=".InformationFragment">
 
     <TextView
-        android:id="@+id/textView"
+        android:id="@+id/welcomeTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="80dp"
@@ -21,19 +21,34 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/introductionTxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="60dp"
         android:padding="10dp"
         android:inputType="textMultiLine"
-        android:text="Lorem ipsum dolor sit amet, consectetur adipiscing elit. Praesent tincidunt, arcu a eleifend imperdiet, ligula velit bibendum magna, eget dapibus ante metus vitae nisi. Sed vehicula, felis a ultricies interdum, orci augue ultricies nisi, eu sagittis erat sem aliquam erat. Sed fermentum, metus quis dictum condimentum, turpis ante accumsan magna, vel dapibus purus arcu at nulla. Nam quis congue tortor. Vivamus blandit tempus interdum. Nam vulputate nibh orci, sed consequat massa lacinia sed. Quisque nec lacus erat. Praesent feugiat gravida libero et rutrum."
+        android:text="@string/introduction_description"
         android:textColor="@color/white"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/welcomeTxt" />
+
+    <TextView
+        android:id="@+id/warningTxt"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:inputType="textMultiLine"
+        android:padding="10dp"
+        android:text="@string/introduction_warning"
+        android:textColor="#FF0000"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/introductionTxt" />
 
     <Button
         android:id="@+id/infoFragNextBtn"
