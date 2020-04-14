@@ -1,37 +1,32 @@
 package ca.shanebrown.securegallery;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-import androidx.recyclerview.widget.StaggeredGridLayoutManager;
-
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
 import android.util.Log;
-import android.view.View;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.Toast;
 
-import java.io.IOException;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.view.ActionMode;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
-import javax.crypto.NoSuchPaddingException;
+import java.io.IOException;
+import java.util.ArrayList;
 
 public class ImageGridActivity extends AppCompatActivity implements ImageGridRecyclerAdapter.OnImageClickListener {
 
     private String key;
     private Bitmap[] images;
     private ImageGridRecyclerAdapter adapter;
+
+    private ActionMode selectionMode;
+    private SelectionModeCallback selectionModeCallback = new SelectionModeCallback();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +73,7 @@ public class ImageGridActivity extends AppCompatActivity implements ImageGridRec
             Log.e("SecureGallery", "No images");
         }
 
-        adapter = new ImageGridRecyclerAdapter(images, this);
+        adapter = new ImageGridRecyclerAdapter(images, ImageGridActivity.this, this);
 
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new StaggeredGridLayoutManager(2, StaggeredGridLayoutManager.VERTICAL));
@@ -86,14 +81,24 @@ public class ImageGridActivity extends AppCompatActivity implements ImageGridRec
 
     @Override
     public void onImageClick(int position) {
-        Log.e("SecureGallery", "Activity pos: " + position);
-        if(position < images.length){
-            Intent intent = new Intent(this, ImageViewActivity.class);
-            intent.putExtra("image", images[position]);
+        if(selectionMode != null){
+            toggleItemSelection(position);
+        }else {
+            if (position < images.length) {
+                Intent intent = new Intent(this, ImageViewActivity.class);
+                intent.putExtra("image", images[position]);
 
-            startActivity(intent);
-        }else{
-            Toast.makeText(this, "Clicked an image that we don't have a reference to, this shouldn't happen.", Toast.LENGTH_LONG).show();
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Clicked an image that we don't have a reference to, this shouldn't happen.", Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+
+    @Override
+    public void onImageLongClick(int position) {
+        if(selectionMode == null){
+            selectionMode = startSupportActionMode(selectionModeCallback);
         }
     }
 
@@ -144,5 +149,56 @@ public class ImageGridActivity extends AppCompatActivity implements ImageGridRec
 
         AlertDialog dialog = builder.create();
         dialog.show();
+    }
+
+    private void toggleItemSelection(int position){
+        adapter.toggleSelection(position);
+
+        int count = adapter.getSelectedItemCount();
+        if(count == 0){
+            selectionMode.finish();
+        }else{
+            selectionMode.setTitle(String.valueOf(count));
+            selectionMode.invalidate();
+        }
+    }
+
+    private class SelectionModeCallback implements androidx.appcompat.view.ActionMode.Callback {
+        @Override
+        public boolean onCreateActionMode(androidx.appcompat.view.ActionMode mode, Menu menu) {
+            mode.getMenuInflater().inflate(R.menu.selection_mode_options, menu);
+            return true;
+        }
+
+        @Override
+        public boolean onPrepareActionMode(androidx.appcompat.view.ActionMode mode, Menu menu) {
+            return false;
+        }
+
+        @Override
+        public boolean onActionItemClicked(androidx.appcompat.view.ActionMode mode, MenuItem item) {
+            switch(item.getItemId()){
+                case R.id.menu_selection_delete:
+                    Toast.makeText(ImageGridActivity.this, "Delete", Toast.LENGTH_LONG).show();
+                    break;
+                case R.id.menu_selection_export_encrypted:
+                    Toast.makeText(ImageGridActivity.this, "Encrypted export", Toast.LENGTH_LONG).show();
+                    break;
+                case R.id.menu_selection_export_decrypted:
+                    Toast.makeText(ImageGridActivity.this, "Decrypted export", Toast.LENGTH_LONG).show();
+                    break;
+                default:
+                    return false;
+            }
+
+            return true;
+        }
+
+        @Override
+        public void onDestroyActionMode(androidx.appcompat.view.ActionMode mode) {
+            Log.e("SecureGallery", "Action Destroy Called");
+            adapter.clearSelection();
+            selectionMode = null;
+        }
     }
 }
