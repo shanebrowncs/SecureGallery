@@ -2,7 +2,6 @@ package ca.shanebrown.securegallery;
 
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,13 +15,16 @@ import androidx.appcompat.view.ActionMode;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.recyclerview.widget.StaggeredGridLayoutManager;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
 
 public class ImageGridActivity extends AppCompatActivity implements ImageGridRecyclerAdapter.OnImageClickListener {
 
     private String key;
-    private Bitmap[] images;
+    private byte[] salt;
+    private ImagePathBundle[] images;
     private ImageGridRecyclerAdapter adapter;
 
     private ActionMode selectionMode;
@@ -55,16 +57,19 @@ public class ImageGridActivity extends AppCompatActivity implements ImageGridRec
 
         SecureDatabase db = new SecureDatabase(this);
         byte[] salt = db.getPassword().getAsByteArray("salt");
+        this.salt = salt;
 
-        images = new Bitmap[]{};
+        images = new ImagePathBundle[]{};
         try {
             images = ImageHandler.getAllSecureImageBitmaps(key, salt);
         }catch(IOException ex){
+            ex.printStackTrace();
             Toast.makeText(this, "Insufficient storage permissions", Toast.LENGTH_LONG).show();
             boolean status = ImageHandler.requestWritePermissions(this);
             Log.e("SecureGallery", "Return status: " + String.valueOf(status));
             return;
         }catch(Exception ex){
+            ex.printStackTrace();
             Toast.makeText(this, "Image decryption failed, " + ex.getClass().getSimpleName(), Toast.LENGTH_LONG).show();
             return;
         }
@@ -86,7 +91,9 @@ public class ImageGridActivity extends AppCompatActivity implements ImageGridRec
         }else {
             if (position < images.length) {
                 Intent intent = new Intent(this, ImageViewActivity.class);
-                intent.putExtra("image", images[position]);
+                intent.putExtra("image", images[position].getPath());
+                intent.putExtra("key", key);
+                intent.putExtra("salt", salt);
 
                 startActivity(intent);
             } else {
@@ -127,7 +134,7 @@ public class ImageGridActivity extends AppCompatActivity implements ImageGridRec
                 }
 
                 try {
-                    Bitmap[] bmaps = ImageHandler.getAllSecureImageBitmaps(key, salt);
+                    ImagePathBundle[] bmaps = ImageHandler.getAllSecureImageBitmaps(key, salt);
                     images = bmaps;
                     adapter.refreshImages(images);
                 }catch(IOException ex){
@@ -163,6 +170,80 @@ public class ImageGridActivity extends AppCompatActivity implements ImageGridRec
         }
     }
 
+    private boolean deleteSelectedImages(List<Integer> items){
+        // Delete selected items
+        boolean success = true;
+        for(Integer item : items){
+            if(!ImageHandler.deleteFile(new File(images[item].getPath()))){
+                success = false;
+            }
+        }
+
+        // Refresh item list after deletion
+        try {
+            images = ImageHandler.getAllSecureImageBitmaps(key, salt);
+            this.images = images;
+            adapter.refreshImages(images, false);
+        }catch(IOException ex){
+            Toast.makeText(ImageGridActivity.this, "Failed fetching images from secure gallery", Toast.LENGTH_LONG).show();
+        }catch(Exception ex){
+            Toast.makeText(ImageGridActivity.this, "Failed fetching images from secure gallery, crypto exception", Toast.LENGTH_LONG).show();
+        }
+
+        // Notify adapter of which items were deleted
+        for(Integer item : items){
+            adapter.notifyItemRemoved(item);
+        }
+
+        return success;
+    }
+
+    private void saveDecryptedImageSelectedUserAction(){
+        List<Integer> items = adapter.getSelectedItems();
+
+        boolean success = true;
+
+        for(Integer item : items){
+            try {
+                ImageHandler.saveDecryptedImage(new File(images[item].getPath()), key, salt);
+            }catch(IOException ex){
+                Toast.makeText(ImageGridActivity.this, "IOException while writing file " + new File(images[item].getPath()).getName(), Toast.LENGTH_LONG).show();
+                success = false;
+            }catch(Exception ex){
+                Toast.makeText(ImageGridActivity.this, "Crypto error, couldn't decrypt image " + new File(images[item].getPath()).getName(), Toast.LENGTH_LONG).show();
+                success = false;
+            }
+        }
+
+        Toast.makeText(ImageGridActivity.this, "Images saved to Pictures directory", Toast.LENGTH_LONG).show();
+    }
+
+    private void deleteSelectedUserAction(){
+        int itemCount = adapter.getSelectedItemCount();
+        final List<Integer> items = adapter.getSelectedItems();
+
+        // Ask user first
+        AlertDialog.Builder builder = new AlertDialog.Builder(ImageGridActivity.this);
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                deleteSelectedImages(items);
+            }
+        });
+        builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+
+        builder.setTitle("Are you sure?");
+        builder.setMessage("Are you sure you would like to delete these " + itemCount + " images? They will not be recoverable.");
+
+        AlertDialog dialog = builder.create();
+        dialog.show();
+    }
+
     private class SelectionModeCallback implements androidx.appcompat.view.ActionMode.Callback {
         @Override
         public boolean onCreateActionMode(androidx.appcompat.view.ActionMode mode, Menu menu) {
@@ -179,13 +260,12 @@ public class ImageGridActivity extends AppCompatActivity implements ImageGridRec
         public boolean onActionItemClicked(androidx.appcompat.view.ActionMode mode, MenuItem item) {
             switch(item.getItemId()){
                 case R.id.menu_selection_delete:
-                    Toast.makeText(ImageGridActivity.this, "Delete", Toast.LENGTH_LONG).show();
-                    break;
-                case R.id.menu_selection_export_encrypted:
-                    Toast.makeText(ImageGridActivity.this, "Encrypted export", Toast.LENGTH_LONG).show();
+                    deleteSelectedUserAction();
+                    mode.finish();
                     break;
                 case R.id.menu_selection_export_decrypted:
-                    Toast.makeText(ImageGridActivity.this, "Decrypted export", Toast.LENGTH_LONG).show();
+                    saveDecryptedImageSelectedUserAction();
+                    mode.finish();
                     break;
                 default:
                     return false;

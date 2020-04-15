@@ -5,11 +5,7 @@
         android:id="@+id/menu_selection_delete"
         android:icon="@android:drawable/ic_menu_delete"
         app:showAsAction="always"
-        android:title="TODO" />
-
-    <item
-        android:id="@+id/menu_selection_export_encrypted"
-        android:title="Export Selection Encrypted" />
+        android:title="Delete" />
 
     <item
         android:id="@+id/menu_selection_export_decrypted"

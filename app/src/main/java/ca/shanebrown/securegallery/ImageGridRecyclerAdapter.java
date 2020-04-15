@@ -20,13 +20,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecyclerAdapter.ImageGridRecyclerViewHolder> {
-    private Bitmap[] images;
+    private ImagePathBundle[] images;
     private SparseBooleanArray selected;
     private Context context;
 
     private OnImageClickListener listener;
 
-    public ImageGridRecyclerAdapter(Bitmap[] images, Context context, OnImageClickListener listener) {
+    public ImageGridRecyclerAdapter(ImagePathBundle[] images, Context context, OnImageClickListener listener) {
         this.images = images;
         this.context = context;
         this.listener = listener;
@@ -35,9 +35,15 @@ public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecy
         selected = new SparseBooleanArray();
     }
 
-    public void refreshImages(Bitmap[] images){
+    public void refreshImages(ImagePathBundle[] images){
         this.images = images;
         this.notifyDataSetChanged();
+    }
+
+    public void refreshImages(ImagePathBundle[] images, boolean notifyAdapter){
+        this.images = images;
+        if(notifyAdapter)
+            this.notifyDataSetChanged();
     }
 
     @NonNull
@@ -54,7 +60,7 @@ public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecy
 
     @Override
     public void onBindViewHolder(@NonNull ImageGridRecyclerViewHolder holder, int position) {
-        holder.imageView.setImageBitmap(this.images[position]);
+        holder.imageView.setImageBitmap(this.images[position].getImage());
         holder.imageView.invalidate();
 
         if(isSelected(position)){
