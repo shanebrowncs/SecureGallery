@@ -1,11 +1,20 @@
 <resources>
-    <string name="app_name">SecureGallery</string>
+    <string name="app_name">Secure Gallery</string>
 
-    <string name="introduction_description">SecureGallery is a password protected image viewing app. It uses it\'s own image store to keep images separate from your main albums. It uses encryption to store protected images so they cannot be viewed without the correct pattern.\n\nIt is important you understand what SecureGallery <b>IS</b> and what it <b>IS NOT.</b> This app is SLIGHTLY more secure than placing .nomedia in a folder. Not only will images not show in image viewing apps but any regular user will not be able to view them if searching with a file manager. HOWEVER, an experienced android dev with physical access will be able to decrypt the contents. This is not an app for hiding things from the NSA.</string>
+    <string name="introduction_description">Secure Gallery is a password protected image viewing app. It uses it\'s own image store to keep images separate from your main albums. It uses encryption to store protected images so they cannot be viewed without the correct pattern.\n\nIt is important you understand what SecureGallery <b>IS</b> and what it <b>IS NOT.</b> This app is SLIGHTLY more secure than placing .nomedia in a folder. Not only will images not show in image viewing apps but any regular user will not be able to view them if searching with a file manager. HOWEVER, an experienced android dev with physical access will be able to decrypt the contents. This is not an app for hiding things from the NSA.</string>
 
     <string name="introduction_warning">
         WARNING: DO NOT TRUST THIS APP AS THE SOLE STORAGE OF ANY CONTENT! CORRUPTION CAN HAPPEN, DECRYPTION CAN FAIL. BACKUPS! BACKUPS! BACKUPS!
     </string>
     <string name="menu_item_delete">Delete</string>
     <string name="menu_item_export">Export Selection Decrypted</string>
+    <string name="welcome_message">Welcome to Secure Gallery</string>
+    <string name="next_btn">Next</string>
+    <string name="no_images">No Images Here</string>
+    <string name="enter_new_password">Enter New Password</string>
+    <string name="import_image">Import</string>
+    <string name="export_decrypted">Export Decrypted</string>
+    <string name="select_all">Select All</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="image_preview">Image Preview</string>
 </resources>

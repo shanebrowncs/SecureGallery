@@ -9,5 +9,5 @@
 
     <item
         android:id="@+id/action_image_view_export"
-        android:title="Export Decrypted"/>
+        android:title="@string/export_decrypted"/>
 </menu>

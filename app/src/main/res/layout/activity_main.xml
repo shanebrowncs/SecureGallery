@@ -4,18 +4,16 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#222222"
     android:gravity="center"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context=".activities.MainActivity">
 
     <TextView
-        android:id="@+id/appTitleTxt"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Secure Gallery"
-        android:textColor="#FFFFFF"
+        android:text="@string/app_name"
+        android:textColor="@color/colorText"
         android:textSize="36sp" />
 
     <com.andrognito.patternlockview.PatternLockView
@@ -23,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="400dp"
         android:visibility="invisible"
-        app:correctStateColor="#009688"
-        app:wrongStateColor="#E91E63" />
+        app:correctStateColor="@color/colorPatternCorrect"
+        app:wrongStateColor="@color/colorPatternIncorrect" />
 
 </LinearLayout>
