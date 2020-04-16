@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Base64;
 import android.util.Log;
 import android.view.View;
@@ -21,10 +22,12 @@ import com.andrognito.patternlockview.listener.PatternLockViewListener;
 import com.andrognito.patternlockview.utils.PatternLockUtils;
 import com.andrognito.patternlockview.utils.ResourceUtils;
 
+import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.crypto.SecretKeyFactory;
@@ -32,7 +35,8 @@ import javax.crypto.spec.PBEKeySpec;
 
 public class MainActivity extends AppCompatActivity {
 
-    private ArrayList<Uri> sent_uris = null;
+    private HashMap<String, Uri> sent_uris = new HashMap<>();
+    private ArrayList<Uri> filesToImport = null;
     private String key = null;
 
     @Override
@@ -60,20 +64,36 @@ public class MainActivity extends AppCompatActivity {
         String type = thisIntent.getType();
 
         if(Intent.ACTION_SEND.equals(action) && type != null){
+            Log.e("SecureGallery", "ACTION_SEND set");
             if(type.startsWith("image/")){ // Handle single image
                 Log.e("SecureGallery", "Recieved Single Image");
                 Uri single_uri = thisIntent.getParcelableExtra(Intent.EXTRA_STREAM);
 
                 if(single_uri != null) {
-                    sent_uris = new ArrayList<>();
-                    sent_uris.add(single_uri);
+                    String imageName = ImageHandler.getFileNameFromURI(this, single_uri);
+                    assert imageName != null;
+                    sent_uris.put(imageName, single_uri);
                 }
             }
         }else if(Intent.ACTION_SEND_MULTIPLE.equals(action) && type != null){
-            if(type.startsWith("image/")){ // Handle multiple images
-                Log.e("SecureGallery", "Recieved Mutliple Images");
+            Log.e("SecureGallery", "ACTION_SEND_MULTIPLE set");
+            if(type.startsWith("image/")) {
                 ArrayList<Uri> URIs = thisIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-                sent_uris = URIs;
+
+                for(Uri uri : URIs){
+                    String imageName = ImageHandler.getFileNameFromURI(this, uri);
+                    assert imageName != null;
+                    sent_uris.put(imageName, uri);
+                }
+            }
+        }
+
+        if(sent_uris != null && sent_uris.size() > 0){
+            try {
+                filesToImport = ImageHandler.writeFilesToCache(this, sent_uris);
+            } catch (IOException e) {
+                e.printStackTrace();
+                Log.e("SecureGallery", "EXCEPTION");
             }
         }
 
@@ -104,10 +124,20 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onComplete(List<PatternLockView.Dot> pattern) {
                 String entered_pw = PatternLockUtils.patternToString(mPatternLockView, pattern);
-                mPatternLockView.clearPattern();
+                mPatternLockView.setInputEnabled(false);
+
+                // Clear pattern after 3 seconds
+                new Handler().postDelayed(new Runnable() {
+                    @Override
+                    public void run() {
+                        mPatternLockView.clearPattern();
+                        mPatternLockView.setInputEnabled(true);
+                    }
+                }, 2000);
 
                 if(verifyPassword(entered_pw)){
                     key = entered_pw;
+                    mPatternLockView.setViewMode(PatternLockView.PatternViewMode.CORRECT);
 
                     if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.M){
                         if(checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
@@ -118,6 +148,8 @@ public class MainActivity extends AppCompatActivity {
 
                     // We have permission or build is < M
                     startAppMainPage(entered_pw);
+                }else{
+                    mPatternLockView.setViewMode(PatternLockView.PatternViewMode.WRONG);
                 }
             }
 
@@ -126,13 +158,11 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
-
     }
 
     public void startAppMainPage(@NonNull String key){
         Intent intent = new Intent(MainActivity.this, ImageGridActivity.class);
-        intent.putParcelableArrayListExtra("sent_uris", sent_uris);
+        intent.putExtra("filesToImport", filesToImport);
         intent.putExtra("key", key);
 
         startActivity(intent);
@@ -163,7 +193,7 @@ public class MainActivity extends AppCompatActivity {
             return false;
         }
 
-        KeySpec spec = new PBEKeySpec(entered_pw.toCharArray(), values.getAsByteArray("salt"), 65536, 128);
+        KeySpec spec = new PBEKeySpec(entered_pw.toCharArray(), values.getAsByteArray("salt"), ImageHandler.KEY_ITERATIONS, 128);
 
         byte[] hash = null;
         try {

@@ -155,6 +155,8 @@ public class NewPasswordFragment extends Fragment {
         });
     }
 
+
+
     public boolean savePassword(String pw){
         SecretKeyFactory factory = null;
         try{
@@ -169,7 +171,7 @@ public class NewPasswordFragment extends Fragment {
         byte[] salt = new byte[16];
         random.nextBytes(salt);
 
-        KeySpec spec = new PBEKeySpec(pw.toCharArray(), salt, 65536, 128);
+        KeySpec spec = new PBEKeySpec(pw.toCharArray(), salt, ImageHandler.KEY_ITERATIONS, 128);
 
         byte[] hash = null;
         try {

@@ -2,6 +2,7 @@ package ca.shanebrown.securegallery;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.PorterDuff;
 import android.os.Build;
 import android.util.Log;
 import android.util.SparseBooleanArray;
@@ -67,13 +68,13 @@ public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecy
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                 holder.imageView.setBackground(ContextCompat.getDrawable(context, R.drawable.border_selected));
             }else{
-                // We gotta figure something else to do
+                holder.imageView.setColorFilter(ContextCompat.getColor(context, R.color.colorPrimary), PorterDuff.Mode.MULTIPLY);
             }
         }else{
             if(Build.VERSION.SDK_INT > Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1) {
                 holder.imageView.setBackground(ContextCompat.getDrawable(context, R.drawable.border));
             }else{
-                // We gotta figure something else to do
+                holder.imageView.clearColorFilter();
             }
         }
     }
@@ -117,6 +118,13 @@ public class ImageGridRecyclerAdapter extends RecyclerView.Adapter<ImageGridRecy
         }
 
         notifyItemChanged(position);
+    }
+
+    public void selectAll(){
+        for(int i = 0; i < getItemCount(); i++){
+            selected.put(i, true);
+            notifyItemChanged(i);
+        }
     }
 
     public static class ImageGridRecyclerViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,View.OnLongClickListener {

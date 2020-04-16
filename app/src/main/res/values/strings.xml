@@ -1,12 +1,11 @@
 <resources>
     <string name="app_name">SecureGallery</string>
 
-    <string name="introduction_description">
-        SecureGallery is a password protected image viewing app. It uses it\'s own image store to keep images separate from your main albums. It uses encryption to store protected images to ensure snooping eyes can\'t view them.\n\n
-        It is important you understand what SecureGallery <b>IS</b> and what it <b>IS NOT.</b> This app is SLIGHTLY more secure than placing .nomedia in a folder. Not only will images not show in image viewing apps but any regular user will not be able to view them if searching with a file manager. HOWEVER, an experienced android dev with physical access will be able to decrypt the contents. This is not an app for hiding things from the NSA.
-    </string>
+    <string name="introduction_description">SecureGallery is a password protected image viewing app. It uses it\'s own image store to keep images separate from your main albums. It uses encryption to store protected images so they cannot be viewed without the correct pattern.\n\nIt is important you understand what SecureGallery <b>IS</b> and what it <b>IS NOT.</b> This app is SLIGHTLY more secure than placing .nomedia in a folder. Not only will images not show in image viewing apps but any regular user will not be able to view them if searching with a file manager. HOWEVER, an experienced android dev with physical access will be able to decrypt the contents. This is not an app for hiding things from the NSA.</string>
 
     <string name="introduction_warning">
         WARNING: DO NOT TRUST THIS APP AS THE SOLE STORAGE OF ANY CONTENT! CORRUPTION CAN HAPPEN, DECRYPTION CAN FAIL. BACKUPS! BACKUPS! BACKUPS!
     </string>
+    <string name="menu_item_delete">Delete</string>
+    <string name="menu_item_export">Export Selection Decrypted</string>
 </resources>

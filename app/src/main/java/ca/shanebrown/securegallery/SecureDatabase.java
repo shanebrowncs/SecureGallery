@@ -67,6 +67,8 @@ public class SecureDatabase extends SQLiteOpenHelper {
         values.put("secret", hash);
         values.put("salt", salt);
 
+        cur.close();
+
         return values;
     }
 }

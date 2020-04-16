@@ -76,8 +76,9 @@ public class InformationFragment extends Fragment {
             public void onClick(View v) {
                 FragmentManager fm = getActivity().getSupportFragmentManager();
                 FragmentTransaction ft = fm.beginTransaction();
-                ft.setCustomAnimations(R.anim.custom_slide_in, R.anim.custom_slide_out);
+                ft.setCustomAnimations(R.anim.custom_slide_left_in, R.anim.custom_slide_left_out, R.anim.custom_slide_right_in, R.anim.custom_slide_right_out);
                 ft.replace(R.id.introduction_frame_layout, new NewPasswordFragment());
+                ft.addToBackStack(null);
                 ft.commit();
             }
         });

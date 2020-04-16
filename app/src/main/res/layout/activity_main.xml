@@ -22,6 +22,8 @@
         android:id="@+id/pattern_lock"
         android:layout_width="match_parent"
         android:layout_height="400dp"
-        android:visibility="invisible" />
+        android:visibility="invisible"
+        app:correctStateColor="#009688"
+        app:wrongStateColor="#E91E63" />
 
 </LinearLayout>
